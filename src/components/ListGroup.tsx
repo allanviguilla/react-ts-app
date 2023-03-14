@@ -1,8 +1,22 @@
 import { MouseEvent, useState } from "react";
 
-export default function ListGroup() {
-  const [clicked, setClicked] = useState(false);
-  const items = ["New York", "San Fransico", "Tokyo", "London", "Paris"];
+interface ListGroupProps {
+  //an array of strings
+  items: string[];
+  heading: string;
+  // (item: string) => void
+  onSelectItem: (item: string) => void;
+}
+
+export default function ListGroup({
+  items,
+  heading,
+  onSelectItem,
+}: ListGroupProps) {
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  // let items = ["New York", "San Fransico", "Tokyo", "London", "Paris"];
+  // let selectedIndex = 0;
 
   // const handleClick = (item: string) => {
   //   setClicked(true);
@@ -14,11 +28,11 @@ export default function ListGroup() {
   //   return items.length === 0 ? <p>No items found</p> : null;
   // };
 
-  const handleClick = (event: MouseEvent) => console.log(event);
+  // const handleClick = (event: MouseEvent) => console.log(event);
 
   return (
     <>
-      <h1>List Group</h1>
+      <h1>{heading}</h1>
       {/* {items.length === 0 ? <p>No items found.</p> : null} */}
       {/* {items.length === 0 && <p>No items found.</p>} */}
       {/* {getMessage()} */}
@@ -29,7 +43,18 @@ export default function ListGroup() {
         <li className="list-group-item">A fourth item</li>
         <li className="list-group-item">And a fifth one</li> */}
         {items.map((item, index) => (
-          <li className="list-group-item" key={item} onClick={handleClick}>
+          <li
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+            key={item}
+            onClick={() => {
+              setSelectedIndex(index);
+              onSelectItem(item);
+            }}
+          >
             {item}
           </li>
         ))}
