@@ -1,9 +1,50 @@
 import { useState } from "react";
 
+import ExpenseTracker from "./ExpenseTracker";
+import ExpenseFilter from "./ExpenseFilter";
+import ExpenseForm from "./ExpenseForm";
+
 export default function App() {
-  return <></>;
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [expenses, setExpenses] = useState([
+    { id: 1, description: "Milk", amount: 5, category: "Groceries" },
+    { id: 2, description: "Eggs", amount: 3, category: "Groceries" },
+    { id: 3, description: "Bread", amount: 2, category: "Groceries" },
+    { id: 4, description: "Netflix", amount: 9, category: "Entertainment" },
+    { id: 5, description: "Electricity", amount: 1, category: "Utilities" },
+  ]);
+  const visibleExpenses = selectedCategory
+    ? expenses.filter((e) => e.category === selectedCategory)
+    : expenses;
+  return (
+    <>
+      <div className="mb-5">
+        <ExpenseForm
+          onSubmit={(expense) =>
+            setExpenses([...expenses, { ...expense, id: expenses.length + 1 }])
+          }
+        />
+      </div>
+      <div className="mb-3">
+        <ExpenseFilter
+          onSelectCategory={(category) => setSelectedCategory(category)}
+        />
+      </div>
+      <div className="mb-3">
+        <ExpenseTracker
+          expenses={visibleExpenses}
+          onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
+        />
+      </div>
+    </>
+  );
 }
 
+// import Form from "./Form";
+
+{
+  /* <Form /> */
+}
 // import ExpandableText from "./components/ExpandableText";
 
 // <ExpandableText maxChars={10}>
