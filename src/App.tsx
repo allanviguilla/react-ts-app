@@ -1,43 +1,134 @@
-import { useState } from "react";
-
-import ExpenseTracker from "./ExpenseTracker";
-import ExpenseFilter from "./ExpenseFilter";
-import ExpenseForm from "./ExpenseForm";
+import useUsers from "./hooks/useUsers";
+import userService, { User } from "./services/user-service";
 
 export default function App() {
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [expenses, setExpenses] = useState([
-    { id: 1, description: "Milk", amount: 5, category: "Groceries" },
-    { id: 2, description: "Eggs", amount: 3, category: "Groceries" },
-    { id: 3, description: "Bread", amount: 2, category: "Groceries" },
-    { id: 4, description: "Netflix", amount: 9, category: "Entertainment" },
-    { id: 5, description: "Electricity", amount: 1, category: "Utilities" },
-  ]);
-  const visibleExpenses = selectedCategory
-    ? expenses.filter((e) => e.category === selectedCategory)
-    : expenses;
+  const { users, error, loading, setUsers, setError } = useUsers();
+
+  const deleteUser = (user: User) => {
+    const originalUsers = [...users];
+    setUsers(users.filter((u) => u.id !== user.id));
+
+    userService.delete(user.id).catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+
+  const addUser = () => {
+    const originalUsers = [...users];
+    const newUser = { id: 0, name: "Allan" };
+
+    setUsers([newUser, ...users]);
+
+    userService
+      .create(newUser)
+      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .catch((err) => {
+        setError(err.message);
+        setUsers(originalUsers);
+      });
+  };
+
+  const updateUser = (user: User) => {
+    const originalUsers = [...users];
+    const updatedUser = { ...user, name: user.name + "!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+
+    //We use the PUT method for replacing an object
+    //On the other hand, the PATCH method updates one or more of its properties
+    userService.update(updatedUser).catch((err) => {
+      setError(err.message);
+      setUsers(originalUsers);
+    });
+  };
+
   return (
     <>
-      <div className="mb-5">
-        <ExpenseForm
-          onSubmit={(expense) =>
-            setExpenses([...expenses, { ...expense, id: expenses.length + 1 }])
-          }
-        />
-      </div>
-      <div className="mb-3">
-        <ExpenseFilter
-          onSelectCategory={(category) => setSelectedCategory(category)}
-        />
-      </div>
-      <div className="mb-3">
-        <ExpenseTracker
-          expenses={visibleExpenses}
-          onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
-        />
-      </div>
+      {error && <h3 className="text-danger">{error}</h3>}
+      {loading && <div className="spinner-border"></div>}
+      <button className="btn btn-primary mb-3" onClick={addUser}>
+        Add
+      </button>
+      <ul className="list-group">
+        {users.map((user) => (
+          <li
+            key={user.id}
+            className="list-group-item d-flex justify-content-between"
+          >
+            {user.name}
+            <div className="mb-3">
+              <button
+                className="btn btn-outline-secondary mx-1"
+                onClick={() => updateUser(user)}
+              >
+                Update
+              </button>
+              <button
+                className="btn btn-outline-danger"
+                onClick={() => deleteUser(user)}
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </>
   );
+}
+
+// import { AxiosError } from "axios";
+
+//get -> await promise -> res / err
+// const fetchUsers = async () => {
+//   try {
+//     const res = await axios.get<User[]>(
+//       "https://jsonplaceholder.typicode.com/xusers"
+//     );
+//     setUsers(res.data);
+//   } catch (err) {
+//     setError((err as AxiosError).message);
+//   }
+// };
+
+// fetchUsers();
+
+// import ExpenseTracker from "./ExpenseTracker";
+// import ExpenseFilter from "./ExpenseFilter";
+// import ExpenseForm from "./ExpenseForm";
+
+// const [selectedCategory, setSelectedCategory] = useState("");
+// const [expenses, setExpenses] = useState([
+//   { id: 1, description: "Milk", amount: 5, category: "Groceries" },
+//   { id: 2, description: "Eggs", amount: 3, category: "Groceries" },
+//   { id: 3, description: "Bread", amount: 2, category: "Groceries" },
+//   { id: 4, description: "Netflix", amount: 9, category: "Entertainment" },
+//   { id: 5, description: "Electricity", amount: 1, category: "Utilities" },
+// ]);
+
+// const visibleExpenses = selectedCategory
+// ? expenses.filter((e) => e.category === selectedCategory)
+// : expenses;
+
+{
+  /* <div className="mb-5">
+<ExpenseForm
+  onSubmit={(expense) =>
+    setExpenses([...expenses, { ...expense, id: expenses.length + 1 }])
+  }
+/>
+</div>
+<div className="mb-3">
+<ExpenseFilter
+  onSelectCategory={(category) => setSelectedCategory(category)}
+/>
+</div>
+<div className="mb-3">
+<ExpenseTracker
+  expenses={visibleExpenses}
+  onDelete={(id) => setExpenses(expenses.filter((e) => e.id !== id))}
+/>
+</div> */
 }
 
 // import Form from "./Form";
